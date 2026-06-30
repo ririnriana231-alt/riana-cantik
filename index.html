@@ -12,7 +12,7 @@
         }
 
         body {
-            background: #0b0104; /* Latar belakang gelap agar warna partikel pink menyala */
+            background: #0b0104;
             overflow: hidden;
             display: flex;
             justify-content: center;
@@ -28,7 +28,6 @@
             z-index: 1;
         }
 
-        /* Wadah Konten Utama */
         .container {
             position: relative;
             z-index: 10;
@@ -39,35 +38,12 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            pointer-events: none;
         }
 
-        /* Bingkai Foto Polaroid Instax */
-        .photo-frame {
-            background: #ffffff;
-            padding: 12px 12px 35px 12px; /* Bagian bawah lebih tebal khas polaroid */
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 101, 132, 0.2);
-            border-radius: 4px;
-            transform: scale(0.6) rotate(-4deg) translateY(30px); /* Efek miring estetik */
-            opacity: 0;
-            transition: all 2.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Animasi pop-up kenyal */
-            margin-bottom: 20px;
-            width: 220px;
-        }
-
-        .photo-frame img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover; /* Agar foto otomatis terpotong rapi */
-            border-radius: 2px;
-            filter: sepia(10%) contrast(95%); /* Sedikit filter vintage halus */
-        }
-
-        /* Teks Pesan */
         h1 {
             color: #ff6584;
             font-size: 1.6rem;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             text-shadow: 0 0 15px rgba(255, 101, 132, 0.6);
             opacity: 0;
             transform: translateY(20px);
@@ -78,20 +54,46 @@
             color: #ffe3e8;
             font-size: 0.95rem;
             line-height: 1.6;
+            margin-bottom: 25px;
             opacity: 0;
             transform: translateY(20px);
             transition: all 2s ease 0.8s;
         }
 
-        /* Trigger Animasi Muncul */
-        .show-text .photo-frame {
-            opacity: 1;
-            transform: scale(1) rotate(-3deg) translateY(0);
+        /* Gaya Tombol Link Foto */
+        .photo-link {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #ff6584, #ff416c);
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            box-shadow: 0 5px 15px rgba(255, 65, 108, 0.4);
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.5s ease 1.5s; /* Muncul paling akhir setelah teks */
+            pointer-events: none; /* Belum bisa diklik sebelum muncul */
         }
 
+        /* Efek Hover saat tombol disentuh/diklik */
+        .photo-link:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(255, 65, 108, 0.6);
+            background: linear-gradient(45deg, #ff416c, #ff6584);
+        }
+
+        /* Trigger Animasi Muncul */
         .show-text h1, .show-text p {
             opacity: 1;
             transform: translateY(0);
+        }
+
+        .show-text .photo-link {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto; /* Aktifkan klik setelah tombol muncul */
         }
     </style>
 </head>
@@ -100,14 +102,12 @@
     <canvas id="canvas"></canvas>
 
     <div class="container" id="text-container">
-        <div class="photo-frame">
-            <div class="photo-frame">
-    <img src="https://ibb.co.com/tPmMpFPz" alt="Foto Spesial">
-</div>
-
-
         <h1>Untuk Pacarku yang Paling Lucu 💖</h1>
         <p>Sama seperti bintik bintang ini yang tahu ke mana harus berjalan untuk membentuk cinta, dan mekar menjadi bunga yang indah... seperti itulah hatiku sejak ada kamu. 🌹</p>
+        
+        <a href="https://ibb.co.com/tPmMpFPz" target="_blank" class="photo-link">
+            Klik di Sini Ada Kejutan Kecil ✨
+        </a>
     </div>
 
     <script>
@@ -128,14 +128,14 @@
         setTimeout(() => { animationState = 2; }, 6500);  // Detik 6.5: Jadi Bunga Mawar
         setTimeout(() => { 
             textContainer.classList.add('show-text'); 
-        }, 9500); // Detik 9.5: Foto Polaroid & Teks muncul bersamaan secara manis
+        }, 9500); // Detik 9.5: Teks & Tombol muncul bersamaan
 
         // --- Rumus Matematika Bentuk ---
         function getHeartPoint(t) {
             const scale = 12; 
             const x = scale * 16 * Math.pow(Math.sin(t), 3);
             const y = -scale * (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
-            return { x: x + width / 2, y: y + height / 2 - 90 }; // Digeser sedikit ke atas agar pas dengan foto
+            return { x: x + width / 2, y: y + height / 2 - 90 }; 
         }
 
         function getFlowerPoint(t, index) {
