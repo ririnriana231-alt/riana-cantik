@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spesial Buat Kamu ✨</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b0104; /* Latar belakang gelap agar warna partikel pink menyala */
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* Wadah Konten Utama */
+        .container {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 85%;
+            width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        /* Bingkai Foto Polaroid Instax */
+        .photo-frame {
+            background: #ffffff;
+            padding: 12px 12px 35px 12px; /* Bagian bawah lebih tebal khas polaroid */
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 101, 132, 0.2);
+            border-radius: 4px;
+            transform: scale(0.6) rotate(-4deg) translateY(30px); /* Efek miring estetik */
+            opacity: 0;
+            transition: all 2.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Animasi pop-up kenyal */
+            margin-bottom: 20px;
+            width: 220px;
+        }
+
+        .photo-frame img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover; /* Agar foto otomatis terpotong rapi */
+            border-radius: 2px;
+            filter: sepia(10%) contrast(95%); /* Sedikit filter vintage halus */
+        }
+
+        /* Teks Pesan */
+        h1 {
+            color: #ff6584;
+            font-size: 1.6rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px rgba(255, 101, 132, 0.6);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 2s ease;
+        }
+
+        p {
+            color: #ffe3e8;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 2s ease 0.8s;
+        }
+
+        /* Trigger Animasi Muncul */
+        .show-text .photo-frame {
+            opacity: 1;
+            transform: scale(1) rotate(-3deg) translateY(0);
+        }
+
+        .show-text h1, .show-text p {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="container" id="text-container">
+        <div class="photo-frame">
+            <img src="https://postimg.cc/mzpML4hj" alt="Foto Spesial">
+        </div>
+
+        <h1>Untuk Pacarku yang Paling Lucu 💖</h1>
+        <p>Sama seperti bintik bintang ini yang tahu ke mana harus berjalan untuk membentuk cinta, dan mekar menjadi bunga yang indah... seperti itulah hatiku sejak ada kamu. 🌹</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const textContainer = document.getElementById('text-container');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        const numParticles = 500; 
+        const particles = [];
+
+        let animationState = 0; 
+
+        // Alur Waktu Otomatis
+        setTimeout(() => { animationState = 1; }, 2500);  // Detik 2.5: Jadi Love Pink
+        setTimeout(() => { animationState = 2; }, 6500);  // Detik 6.5: Jadi Bunga Mawar
+        setTimeout(() => { 
+            textContainer.classList.add('show-text'); 
+        }, 9500); // Detik 9.5: Foto Polaroid & Teks muncul bersamaan secara manis
+
+        // --- Rumus Matematika Bentuk ---
+        function getHeartPoint(t) {
+            const scale = 12; 
+            const x = scale * 16 * Math.pow(Math.sin(t), 3);
+            const y = -scale * (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+            return { x: x + width / 2, y: y + height / 2 - 90 }; // Digeser sedikit ke atas agar pas dengan foto
+        }
+
+        function getFlowerPoint(t, index) {
+            let x, y;
+            if (index % 6 === 0) {
+                x = (index % 12 - 6) * 1.5;
+                y = (index % 40) * 4 + 40; 
+            } else {
+                const k = 5; 
+                const r = 140 * Math.sin(k * t); 
+                x = r * Math.cos(t);
+                y = r * Math.sin(t) - 30;
+            }
+            return { x: x + width / 2, y: y + height / 2 - 100 };
+        }
+
+        // --- Blueprint Partikel ---
+        class Particle {
+            constructor(index) {
+                this.index = index;
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 2 + 1.2;
+                this.speed = Math.random() * 0.03 + 0.02;
+                this.color = { r: 240, g: 240, b: 245, a: 0.5 };
+                this.t = (index / numParticles) * Math.PI * 2;
+            }
+
+            update() {
+                let targetX, targetY;
+                let targetColor = { r: 240, g: 240, b: 245, a: 0.5 };
+
+                if (animationState === 0) {
+                    this.x += Math.sin(this.index + Date.now() * 0.0015) * 0.4;
+                    this.y += Math.cos(this.index + Date.now() * 0.0015) * 0.4;
+                    return;
+                } 
+                else if (animationState === 1) {
+                    const target = getHeartPoint(this.t);
+                    targetX = target.x;
+                    targetY = target.y;
+                    targetColor = { r: 255, g: 20, b: 147, a: 0.85 }; 
+                } 
+                else if (animationState === 2) {
+                    const target = getFlowerPoint(this.t, this.index);
+                    targetX = target.x;
+                    targetY = target.y;
+
+                    if (this.index % 6 === 0) {
+                        targetColor = { r: 46, g: 139, b: 87, a: 0.8 };
+                    } else {
+                        targetColor = { r: 230, g: 15, b: 60, a: 0.9 };
+                    }
+                }
+
+                this.x += (targetX - this.x) * this.speed;
+                this.y += (targetY - this.y) * this.speed;
+
+                this.color.r += (targetColor.r - this.color.r) * 0.05;
+                this.color.g += (targetColor.g - this.color.g) * 0.05;
+                this.color.b += (targetColor.b - this.color.b) * 0.05;
+                this.color.a += (targetColor.a - this.color.a) * 0.05;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${Math.floor(this.color.r)}, ${Math.floor(this.color.g)}, ${Math.floor(this.color.b)}, ${this.color.a})`;
+                
+                if (animationState > 0) {
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = `rgb(${this.color.r}, ${this.color.g}, ${this.color.b})`;
+                } else {
+                    ctx.shadowBlur = 0;
+                }
+                
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < numParticles; i++) {
+            particles.push(new Particle(i));
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(11, 1, 4, 0.25)';
+            ctx.fillRect(0, 0, width, height);
+
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
